@@ -123,25 +123,26 @@ class MazeTraverser():
         '''
         Attempt to use solver to solve maze in maxiter number of steps
 
-        returns True is solving was successful, False if it failed
+        returns the iteration number if solving was successful, False if it failed
         
         '''
         for i in range(maxiter):
             if np.all(self.idx == self.exit):
                 # Found exit
-                return True
+                return i
             
             self.solve_step(solver)
 
         # Maxiter reached without failure, but failed to solve maze
         return False
             
-    def solve_with_plotting(self, solver, maxiter=10000, animate=True, frame_fname=None, anim_frametime=0.25):
+    def solve_with_plotting(self, solver, maxiter=100, show_hist=True, animate=True, frame_fname=None, anim_frametime=0.25):
         '''
         Perform the same solution steps, but also plot the current state at every iteration
 
         Extra args are:
 
+        show_hist: Whether to plot the path the solver has taken, as well as the current position.
         animate: Whether to use plt.pause to display a matplotlib plot in a new window
             which is repeatedly updated (similar to using plt.show())
         frame_fname: Root filename for saving individual frame plots
@@ -153,6 +154,9 @@ class MazeTraverser():
         '''
         import matplotlib.pyplot as plt
 
+        histx = []
+        histy = []
+
         for i in range(maxiter):
             if np.all(self.idx == self.exit):
                 # Found exit
@@ -162,7 +166,14 @@ class MazeTraverser():
             self.solve_step(solver)
 
             plt.clf()
+            plt.title(f"Iter {i+1}")
             plt.imshow(self.maze.T)
+
+            if show_hist:
+                histx.append(self.idx[0])
+                histy.append(self.idx[1])
+                plt.plot(histx, histy, color="r")
+
             plt.scatter(*self.idx, marker="x", color="r")
 
             if animate:
@@ -171,3 +182,6 @@ class MazeTraverser():
             if frame_fname is not None:
                 fname = frame_fname + str(i) + ".png"
                 plt.savefig(fname)
+
+        plt.show()
+        return i
